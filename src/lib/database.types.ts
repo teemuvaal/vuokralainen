@@ -161,6 +161,41 @@ export interface Database {
           uploaded_at?: string
         }
       }
+      property_documents: {
+        Row: {
+          id: string
+          property_id: string
+          user_id: string
+          name: string
+          file_path: string
+          file_size: number | null
+          mime_type: string | null
+          document_type: string | null
+          uploaded_at: string
+        }
+        Insert: {
+          id?: string
+          property_id: string
+          user_id: string
+          name: string
+          file_path: string
+          file_size?: number | null
+          mime_type?: string | null
+          document_type?: string | null
+          uploaded_at?: string
+        }
+        Update: {
+          id?: string
+          property_id?: string
+          user_id?: string
+          name?: string
+          file_path?: string
+          file_size?: number | null
+          mime_type?: string | null
+          document_type?: string | null
+          uploaded_at?: string
+        }
+      }
       rent_schedules: {
         Row: {
           id: string

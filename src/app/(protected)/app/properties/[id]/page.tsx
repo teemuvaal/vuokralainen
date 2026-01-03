@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PropertyForm } from '@/components/properties/property-form'
+import { PropertyDocuments } from '@/components/documents/property-documents'
 import { updateProperty, deleteProperty } from '@/lib/actions/properties'
+import { getPropertyDocuments } from '@/lib/actions/documents'
 import type { Database } from '@/lib/database.types'
 import {
   ArrowLeft,
@@ -17,6 +19,7 @@ import {
   Euro,
   Users,
   Trash2,
+  FileText,
 } from 'lucide-react'
 import {
   Dialog,
@@ -32,6 +35,7 @@ type Property = Database['public']['Tables']['properties']['Row']
 type Tenant = Database['public']['Tables']['tenants']['Row']
 type RentPayment = Database['public']['Tables']['rent_payments']['Row']
 type Expense = Database['public']['Tables']['expenses']['Row']
+type PropertyDocument = Database['public']['Tables']['property_documents']['Row']
 
 const propertyTypeLabels: Record<string, string> = {
   apartment: 'Kerrostalo',
@@ -89,6 +93,9 @@ export default async function PropertyDetailPage({
     .limit(5)
 
   const recentExpenses = expensesData as Expense[] | null
+
+  // Get property documents
+  const documents = await getPropertyDocuments(id)
 
   const fullAddress = [property.address, property.postal_code, property.city]
     .filter(Boolean)
@@ -157,6 +164,10 @@ export default async function PropertyDetailPage({
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Yleiskatsaus</TabsTrigger>
+          <TabsTrigger value="documents">
+            <FileText className="mr-2 h-4 w-4" />
+            Tiedostot ({documents.length})
+          </TabsTrigger>
           <TabsTrigger value="edit">Muokkaa</TabsTrigger>
         </TabsList>
 
@@ -334,6 +345,20 @@ export default async function PropertyDetailPage({
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tiedostot</CardTitle>
+              <CardDescription>
+                Lataa ja hallitse kohteeseen liittyviä tiedostoja (sopimuksia, pöytäkirjoja, jne.)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PropertyDocuments propertyId={id} initialDocuments={documents} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="edit">
