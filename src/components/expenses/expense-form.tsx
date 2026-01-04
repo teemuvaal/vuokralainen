@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { createExpense } from '@/lib/actions/expenses'
+import { VastikeBreakdownInput } from './vastike-breakdown-input'
 import type { Database } from '@/lib/database.types'
 
 type Property = Database['public']['Tables']['properties']['Row']
@@ -50,6 +51,18 @@ export function ExpenseForm({
 }: ExpenseFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [isRecurring, setIsRecurring] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>()
+  const [amount, setAmount] = useState<number>(defaultAmount || 0)
+  const [showVastikeBreakdown, setShowVastikeBreakdown] = useState(false)
+
+  // Find "Vastike" category
+  const vastikeCategory = categories.find(c => c.name === 'Vastike')
+  const isVastikeSelected = selectedCategory === vastikeCategory?.id
+
+  // Update breakdown visibility when category changes
+  useEffect(() => {
+    setShowVastikeBreakdown(isVastikeSelected)
+  }, [isVastikeSelected])
 
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -79,7 +92,8 @@ export function ExpenseForm({
             type="number"
             step="0.01"
             placeholder="50.00"
-            defaultValue={defaultAmount}
+            value={amount || ''}
+            onChange={(e) => setAmount(Number(e.target.value) || 0)}
             required
           />
         </div>
@@ -115,7 +129,7 @@ export function ExpenseForm({
 
         <div className="space-y-2">
           <Label htmlFor="categoryId">Kategoria</Label>
-          <Select name="categoryId">
+          <Select name="categoryId" value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger>
               <SelectValue placeholder="Valitse kategoria" />
             </SelectTrigger>
@@ -129,6 +143,15 @@ export function ExpenseForm({
           </Select>
         </div>
       </div>
+
+      {/* Vastike Breakdown - shown only when Vastike category is selected */}
+      {isVastikeSelected && (
+        <div className="space-y-2">
+          <input type="hidden" name="hasVastikeBreakdown" value="true" />
+          <VastikeBreakdownInput totalAmount={amount} />
+        </div>
+      )}
+
 
       <div className="space-y-2">
         <Label htmlFor="description">Kuvaus</Label>

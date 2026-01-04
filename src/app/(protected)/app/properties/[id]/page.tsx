@@ -7,8 +7,13 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PropertyForm } from '@/components/properties/property-form'
 import { PropertyDocuments } from '@/components/documents/property-documents'
+import { VastikeBreakdownDisplay } from '@/components/expenses/vastike-breakdown-display'
+import { PendingIncreasesWidget } from '@/components/rent/pending-increases-widget'
+import { RentIncreaseHistory } from '@/components/rent/rent-increase-history'
 import { updateProperty, deleteProperty } from '@/lib/actions/properties'
 import { getPropertyDocuments } from '@/lib/actions/documents'
+import { getPendingRentIncreases } from '@/lib/actions/rent'
+import { parseVastikeBreakdown } from '@/lib/types'
 import type { Database } from '@/lib/database.types'
 import {
   ArrowLeft,
@@ -20,6 +25,12 @@ import {
   Users,
   Trash2,
   FileText,
+  Wrench,
+  User,
+  Phone,
+  Mail,
+  Building,
+  TrendingUp,
 } from 'lucide-react'
 import {
   Dialog,
@@ -97,6 +108,12 @@ export default async function PropertyDetailPage({
   // Get property documents
   const documents = await getPropertyDocuments(id)
 
+  // Get pending rent increases for this property
+  const allPendingIncreases = await getPendingRentIncreases()
+  const propertyPendingIncreases = allPendingIncreases.filter(
+    inc => inc.propertyId === id
+  )
+
   const fullAddress = [property.address, property.postal_code, property.city]
     .filter(Boolean)
     .join(', ')
@@ -164,6 +181,10 @@ export default async function PropertyDetailPage({
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Yleiskatsaus</TabsTrigger>
+          <TabsTrigger value="rent">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Vuokrat
+          </TabsTrigger>
           <TabsTrigger value="documents">
             <FileText className="mr-2 h-4 w-4" />
             Tiedostot ({documents.length})
@@ -310,20 +331,28 @@ export default async function PropertyDetailPage({
               <CardContent>
                 {recentExpenses && recentExpenses.length > 0 ? (
                   <div className="space-y-2">
-                    {recentExpenses.map((expense) => (
-                      <div
-                        key={expense.id}
-                        className="flex items-center justify-between p-2 rounded border"
-                      >
-                        <span className="text-sm">
-                          {new Date(expense.expense_date).toLocaleDateString('fi-FI')}
-                          {expense.description && ` - ${expense.description}`}
-                        </span>
-                        <span className="font-medium text-red-600">
-                          -{Number(expense.amount).toLocaleString('fi-FI')} €
-                        </span>
-                      </div>
-                    ))}
+                    {recentExpenses.map((expense) => {
+                      const breakdown = parseVastikeBreakdown(expense.vastike_breakdown)
+
+                      return (
+                        <div key={expense.id} className="rounded border">
+                          <div className="flex items-center justify-between p-2">
+                            <span className="text-sm">
+                              {new Date(expense.expense_date).toLocaleDateString('fi-FI')}
+                              {expense.description && ` - ${expense.description}`}
+                            </span>
+                            <span className="font-medium text-red-600">
+                              -{Number(expense.amount).toLocaleString('fi-FI')} €
+                            </span>
+                          </div>
+                          {breakdown && (
+                            <div className="px-2 pb-2 pt-0">
+                              <VastikeBreakdownDisplay breakdown={breakdown} compact />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-4">
@@ -332,6 +361,87 @@ export default async function PropertyDetailPage({
                 )}
               </CardContent>
             </Card>
+          </div>
+
+          {/* Contact Information */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Maintenance Contact Card */}
+            {(property.maintenance_contact_name || property.maintenance_contact_phone || property.maintenance_contact_email) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wrench className="h-5 w-5" />
+                    Huollon yhteystiedot
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {property.maintenance_contact_name && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span>{property.maintenance_contact_name}</span>
+                    </div>
+                  )}
+                  {property.maintenance_contact_phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <a href={`tel:${property.maintenance_contact_phone}`} className="hover:underline">
+                        {property.maintenance_contact_phone}
+                      </a>
+                    </div>
+                  )}
+                  {property.maintenance_contact_email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a href={`mailto:${property.maintenance_contact_email}`} className="hover:underline">
+                        {property.maintenance_contact_email}
+                      </a>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Property Manager Card */}
+            {(property.property_manager_company || property.property_manager_name || property.property_manager_phone || property.property_manager_email) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="h-5 w-5" />
+                    Isännöitsijä
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {property.property_manager_company && (
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{property.property_manager_company}</span>
+                    </div>
+                  )}
+                  {property.property_manager_name && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span>{property.property_manager_name}</span>
+                    </div>
+                  )}
+                  {property.property_manager_phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <a href={`tel:${property.property_manager_phone}`} className="hover:underline">
+                        {property.property_manager_phone}
+                      </a>
+                    </div>
+                  )}
+                  {property.property_manager_email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a href={`mailto:${property.property_manager_email}`} className="hover:underline">
+                        {property.property_manager_email}
+                      </a>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Notes */}
@@ -359,6 +469,14 @@ export default async function PropertyDetailPage({
               <PropertyDocuments propertyId={id} initialDocuments={documents} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="rent" className="space-y-4">
+          {propertyPendingIncreases.length > 0 && (
+            <PendingIncreasesWidget increases={propertyPendingIncreases} />
+          )}
+
+          <RentIncreaseHistory propertyId={id} />
         </TabsContent>
 
         <TabsContent value="edit">

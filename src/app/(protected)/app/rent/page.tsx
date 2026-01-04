@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PaymentForm } from '@/components/rent/payment-form'
+import { PendingIncreasesWidget } from '@/components/rent/pending-increases-widget'
 import { Plus, Wallet, TrendingUp, Calendar } from 'lucide-react'
 import type { Database } from '@/lib/database.types'
+import { getPendingRentIncreases } from '@/lib/actions/rent'
 import {
   Dialog,
   DialogContent,
@@ -50,6 +52,9 @@ export default async function RentPage() {
   const tenants = tenantsData as Tenant[] | null
   const payments = paymentsData as RentPayment[] | null
   const schedules = schedulesData as RentSchedule[] | null
+
+  // Get pending rent increases
+  const pendingIncreases = await getPendingRentIncreases()
 
   // Calculate monthly totals
   const thisMonthPayments = payments?.filter((p) => {
@@ -170,6 +175,11 @@ export default async function RentPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Rent Increases */}
+      {pendingIncreases.length > 0 && (
+        <PendingIncreasesWidget increases={pendingIncreases} />
+      )}
 
       {/* Payments Table */}
       <Card>

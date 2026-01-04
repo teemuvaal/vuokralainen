@@ -208,6 +208,13 @@ export interface Database {
           end_date: string | null
           is_active: boolean
           created_at: string
+          increase_enabled: boolean
+          increase_type: 'index_tied' | 'contract_based' | null
+          increase_percentage: number | null
+          increase_date_type: 'lease_anniversary' | 'manual' | null
+          next_increase_date: string | null
+          last_increase_date: string | null
+          increase_notes: string | null
         }
         Insert: {
           id?: string
@@ -220,6 +227,13 @@ export interface Database {
           end_date?: string | null
           is_active?: boolean
           created_at?: string
+          increase_enabled?: boolean
+          increase_type?: 'index_tied' | 'contract_based' | null
+          increase_percentage?: number | null
+          increase_date_type?: 'lease_anniversary' | 'manual' | null
+          next_increase_date?: string | null
+          last_increase_date?: string | null
+          increase_notes?: string | null
         }
         Update: {
           id?: string
@@ -232,6 +246,13 @@ export interface Database {
           end_date?: string | null
           is_active?: boolean
           created_at?: string
+          increase_enabled?: boolean
+          increase_type?: 'index_tied' | 'contract_based' | null
+          increase_percentage?: number | null
+          increase_date_type?: 'lease_anniversary' | 'manual' | null
+          next_increase_date?: string | null
+          last_increase_date?: string | null
+          increase_notes?: string | null
         }
       }
       rent_payments: {
@@ -277,6 +298,59 @@ export interface Database {
           period_month?: number | null
           period_year?: number | null
           status?: string
+          notes?: string | null
+          created_at?: string
+        }
+      }
+      rent_increase_history: {
+        Row: {
+          id: string
+          property_id: string
+          tenant_id: string | null
+          user_id: string
+          old_schedule_id: string | null
+          new_schedule_id: string | null
+          old_amount: number
+          new_amount: number
+          increase_percentage: number
+          increase_type: string
+          increase_date: string
+          applied_at: string
+          applied_by: string | null
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          property_id: string
+          tenant_id?: string | null
+          user_id: string
+          old_schedule_id?: string | null
+          new_schedule_id?: string | null
+          old_amount: number
+          new_amount: number
+          increase_percentage: number
+          increase_type: string
+          increase_date: string
+          applied_at?: string
+          applied_by?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          property_id?: string
+          tenant_id?: string | null
+          user_id?: string
+          old_schedule_id?: string | null
+          new_schedule_id?: string | null
+          old_amount?: number
+          new_amount?: number
+          increase_percentage?: number
+          increase_type?: string
+          increase_date?: string
+          applied_at?: string
+          applied_by?: string | null
           notes?: string | null
           created_at?: string
         }

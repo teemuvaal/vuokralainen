@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ExpenseForm } from '@/components/expenses/expense-form'
+import { ExpenseList } from '@/components/expenses/expense-list'
 import { Plus, Receipt, TrendingDown, Camera } from 'lucide-react'
 import type { Database } from '@/lib/database.types'
 
@@ -18,14 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 export default async function ExpensesPage() {
   const supabase = await createClient()
@@ -167,51 +159,11 @@ export default async function ExpensesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {expenses && expenses.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Päivämäärä</TableHead>
-                  <TableHead>Kohde</TableHead>
-                  <TableHead>Kategoria</TableHead>
-                  <TableHead>Kuvaus</TableHead>
-                  <TableHead className="text-right">Summa</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>
-                      {new Date(expense.expense_date).toLocaleDateString('fi-FI')}
-                    </TableCell>
-                    <TableCell>
-                      {expense.property_id && propertyMap[expense.property_id]?.name || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {expense.category_id && categoryMap[expense.category_id] ? (
-                        <Badge variant="outline">
-                          {categoryMap[expense.category_id].name}
-                        </Badge>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {expense.description || '-'}
-                    </TableCell>
-                    <TableCell className="text-right font-medium text-red-600">
-                      -{Number(expense.amount).toLocaleString('fi-FI')} €
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Ei vielä kuluja</p>
-            </div>
-          )}
+          <ExpenseList
+            expenses={expenses || []}
+            propertyMap={propertyMap}
+            categoryMap={categoryMap}
+          />
         </CardContent>
       </Card>
     </div>

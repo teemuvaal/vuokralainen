@@ -22,6 +22,13 @@ export async function createProperty(formData: FormData) {
     size_sqm: formData.get('sizeSqm') ? Number(formData.get('sizeSqm')) : null,
     purchase_price: formData.get('purchasePrice') ? Number(formData.get('purchasePrice')) : null,
     purchase_date: formData.get('purchaseDate') as string || null,
+    maintenance_contact_name: formData.get('maintenanceContactName') as string || null,
+    maintenance_contact_phone: formData.get('maintenanceContactPhone') as string || null,
+    maintenance_contact_email: formData.get('maintenanceContactEmail') as string || null,
+    property_manager_name: formData.get('propertyManagerName') as string || null,
+    property_manager_phone: formData.get('propertyManagerPhone') as string || null,
+    property_manager_email: formData.get('propertyManagerEmail') as string || null,
+    property_manager_company: formData.get('propertyManagerCompany') as string || null,
     notes: formData.get('notes') as string || null,
   }
 
@@ -52,6 +59,13 @@ export async function updateProperty(id: string, formData: FormData) {
     size_sqm: formData.get('sizeSqm') ? Number(formData.get('sizeSqm')) : null,
     purchase_price: formData.get('purchasePrice') ? Number(formData.get('purchasePrice')) : null,
     purchase_date: formData.get('purchaseDate') as string || null,
+    maintenance_contact_name: formData.get('maintenanceContactName') as string || null,
+    maintenance_contact_phone: formData.get('maintenanceContactPhone') as string || null,
+    maintenance_contact_email: formData.get('maintenanceContactEmail') as string || null,
+    property_manager_name: formData.get('propertyManagerName') as string || null,
+    property_manager_phone: formData.get('propertyManagerPhone') as string || null,
+    property_manager_email: formData.get('propertyManagerEmail') as string || null,
+    property_manager_company: formData.get('propertyManagerCompany') as string || null,
     notes: formData.get('notes') as string || null,
   }
 

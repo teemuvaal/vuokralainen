@@ -162,6 +162,96 @@ export function PropertyForm({ property, action }: PropertyFormProps) {
         </div>
       </div>
 
+      {/* Maintenance Contact Section */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-lg font-medium">Huollon yhteystiedot</h3>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="maintenanceContactName">Yhteyshenkilö</Label>
+            <Input
+              id="maintenanceContactName"
+              name="maintenanceContactName"
+              placeholder="Nimi"
+              defaultValue={property?.maintenance_contact_name || ''}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="maintenanceContactPhone">Puhelin</Label>
+            <Input
+              id="maintenanceContactPhone"
+              name="maintenanceContactPhone"
+              type="tel"
+              placeholder="+358 40 123 4567"
+              defaultValue={property?.maintenance_contact_phone || ''}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="maintenanceContactEmail">Sähköposti</Label>
+            <Input
+              id="maintenanceContactEmail"
+              name="maintenanceContactEmail"
+              type="email"
+              placeholder="huolto@esimerkki.fi"
+              defaultValue={property?.maintenance_contact_email || ''}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Property Manager Section */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-lg font-medium">Isännöitsijä</h3>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="propertyManagerCompany">Isännöitsijätoimisto</Label>
+            <Input
+              id="propertyManagerCompany"
+              name="propertyManagerCompany"
+              placeholder="Isännöinti Oy"
+              defaultValue={property?.property_manager_company || ''}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="propertyManagerName">Yhteyshenkilö</Label>
+            <Input
+              id="propertyManagerName"
+              name="propertyManagerName"
+              placeholder="Nimi"
+              defaultValue={property?.property_manager_name || ''}
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="propertyManagerPhone">Puhelin</Label>
+            <Input
+              id="propertyManagerPhone"
+              name="propertyManagerPhone"
+              type="tel"
+              placeholder="+358 9 1234 567"
+              defaultValue={property?.property_manager_phone || ''}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="propertyManagerEmail">Sähköposti</Label>
+            <Input
+              id="propertyManagerEmail"
+              name="propertyManagerEmail"
+              type="email"
+              placeholder="info@isannointi.fi"
+              defaultValue={property?.property_manager_email || ''}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="notes">Muistiinpanot</Label>
         <Textarea
