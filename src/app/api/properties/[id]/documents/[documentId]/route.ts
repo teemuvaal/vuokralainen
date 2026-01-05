@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/lib/database.types'
+
+type PropertyDocument = Database['public']['Tables']['property_documents']['Row']
 
 export async function DELETE(
   request: NextRequest,
@@ -35,10 +38,12 @@ export async function DELETE(
       )
     }
 
+    const doc = document as PropertyDocument
+
     // Delete from storage
     const { error: storageError } = await supabase.storage
       .from('documents')
-      .remove([document.file_path])
+      .remove([doc.file_path])
 
     if (storageError) {
       console.error('Storage deletion error:', storageError)
@@ -102,10 +107,12 @@ export async function GET(
       )
     }
 
+    const doc = document as PropertyDocument
+
     // Get signed URL for download
     const { data: signedUrlData, error: urlError } = await supabase.storage
       .from('documents')
-      .createSignedUrl(document.file_path, 60) // 60 seconds expiry
+      .createSignedUrl(doc.file_path, 60) // 60 seconds expiry
 
     if (urlError || !signedUrlData) {
       console.error('Error creating signed URL:', urlError)
@@ -116,7 +123,7 @@ export async function GET(
     }
 
     return NextResponse.json({
-      ...document,
+      ...doc,
       downloadUrl: signedUrlData.signedUrl,
     })
   } catch (error) {

@@ -23,7 +23,7 @@ export async function createRentSchedule(formData: FormData) {
     is_active: true,
   }
 
-  const { error } = await supabase.from('rent_schedules').insert(data)
+  const { error } = await supabase.from('rent_schedules').insert(data as never)
 
   if (error) {
     return { error: error.message }
@@ -57,7 +57,7 @@ export async function createRentPayment(formData: FormData) {
     notes: formData.get('notes') as string || null,
   }
 
-  const { error } = await supabase.from('rent_payments').insert(data)
+  const { error } = await supabase.from('rent_payments').insert(data as never)
 
   if (error) {
     return { error: error.message }
@@ -111,7 +111,7 @@ export async function updateRentSchedule(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from('rent_schedules')
-    .update(data)
+    .update(data as never)
     .eq('id', id)
     .eq('user_id', user.id)
 
@@ -184,7 +184,7 @@ export async function updateRentIncreaseSettings(scheduleId: string, formData: F
 
   let nextIncreaseDate: string | null = null
   if (enabled && dateType) {
-    const leaseStart = (schedule.tenants as any)?.lease_start
+    const leaseStart = (schedule as any).tenants?.lease_start
     if (!leaseStart && dateType === 'lease_anniversary') {
       return { error: 'Vuokralaisen vuokra-ajan aloituspäivä puuttuu' }
     }
@@ -193,7 +193,7 @@ export async function updateRentIncreaseSettings(scheduleId: string, formData: F
       leaseStart || '',
       dateType,
       manualDate,
-      schedule.last_increase_date
+      (schedule as any).last_increase_date
     )
   }
 
@@ -208,7 +208,7 @@ export async function updateRentIncreaseSettings(scheduleId: string, formData: F
 
   const { error } = await supabase
     .from('rent_schedules')
-    .update(data)
+    .update(data as never)
     .eq('id', scheduleId)
     .eq('user_id', user.id)
 
@@ -230,7 +230,7 @@ export async function getPendingRentIncreases(): Promise<PendingIncrease[]> {
     return []
   }
 
-  const { data, error } = await supabase.rpc('get_pending_rent_increases', {
+  const { data, error } = await (supabase.rpc as any)('get_pending_rent_increases', {
     user_uuid: user.id
   })
 
@@ -263,7 +263,9 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
     return { error: 'Vuokrasopimusta ei löytynyt' }
   }
 
-  if (!currentSchedule.increase_enabled || !currentSchedule.increase_percentage) {
+  const schedule = currentSchedule as any
+
+  if (!schedule.increase_enabled || !schedule.increase_percentage) {
     return { error: 'Vuokrankorotus ei ole käytössä tälle sopimukselle' }
   }
 
@@ -272,7 +274,7 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
 
   // Calculate new amount
   const newAmount = Number(
-    (currentSchedule.amount * (1 + currentSchedule.increase_percentage / 100)).toFixed(2)
+    (schedule.amount * (1 + schedule.increase_percentage / 100)).toFixed(2)
   )
 
   // Start transaction-like operations
@@ -285,7 +287,7 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
     .update({
       end_date: endDate.toISOString().split('T')[0],
       is_active: false,
-    })
+    } as never)
     .eq('id', scheduleId)
 
   if (updateError) {
@@ -293,10 +295,10 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
   }
 
   // 2. Create new schedule with increased rent
-  const leaseStart = currentSchedule.start_date
+  const leaseStart = schedule.start_date
   const nextIncreaseDate = calculateNextIncreaseDate(
     leaseStart,
-    currentSchedule.increase_date_type || 'manual',
+    schedule.increase_date_type || 'manual',
     null,
     increaseDate
   )
@@ -305,21 +307,21 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
     .from('rent_schedules')
     .insert({
       user_id: user.id,
-      property_id: currentSchedule.property_id,
-      tenant_id: currentSchedule.tenant_id,
+      property_id: schedule.property_id,
+      tenant_id: schedule.tenant_id,
       amount: newAmount,
-      due_day: currentSchedule.due_day,
+      due_day: schedule.due_day,
       start_date: increaseDate,
-      end_date: currentSchedule.end_date,
+      end_date: schedule.end_date,
       is_active: true,
-      increase_enabled: currentSchedule.increase_enabled,
-      increase_type: currentSchedule.increase_type,
-      increase_percentage: currentSchedule.increase_percentage,
-      increase_date_type: currentSchedule.increase_date_type,
+      increase_enabled: schedule.increase_enabled,
+      increase_type: schedule.increase_type,
+      increase_percentage: schedule.increase_percentage,
+      increase_date_type: schedule.increase_date_type,
       next_increase_date: nextIncreaseDate,
       last_increase_date: increaseDate,
-      increase_notes: currentSchedule.increase_notes,
-    })
+      increase_notes: schedule.increase_notes,
+    } as never)
     .select()
     .single()
 
@@ -332,18 +334,18 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
     .from('rent_increase_history')
     .insert({
       user_id: user.id,
-      property_id: currentSchedule.property_id,
-      tenant_id: currentSchedule.tenant_id,
+      property_id: schedule.property_id,
+      tenant_id: schedule.tenant_id,
       old_schedule_id: scheduleId,
-      new_schedule_id: newSchedule.id,
-      old_amount: currentSchedule.amount,
+      new_schedule_id: (newSchedule as any).id,
+      old_amount: schedule.amount,
       new_amount: newAmount,
-      increase_percentage: currentSchedule.increase_percentage,
-      increase_type: currentSchedule.increase_type || 'manual',
+      increase_percentage: schedule.increase_percentage,
+      increase_type: schedule.increase_type || 'manual',
       increase_date: increaseDate,
       applied_by: user.id,
       notes: notes,
-    })
+    } as never)
 
   if (historyError) {
     console.error('Failed to record history:', historyError)
@@ -352,7 +354,7 @@ export async function applyRentIncrease(scheduleId: string, formData: FormData) 
 
   revalidatePath('/app/rent')
   revalidatePath('/app/properties')
-  return { success: true, newScheduleId: newSchedule.id }
+  return { success: true, newScheduleId: (newSchedule as any).id }
 }
 
 // Get rent increase history for a property or tenant

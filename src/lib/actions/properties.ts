@@ -32,7 +32,7 @@ export async function createProperty(formData: FormData) {
     notes: formData.get('notes') as string || null,
   }
 
-  const { error } = await supabase.from('properties').insert(data)
+  const { error } = await supabase.from('properties').insert(data as never)
 
   if (error) {
     return { error: error.message }
@@ -71,7 +71,7 @@ export async function updateProperty(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from('properties')
-    .update(data)
+    .update(data as never)
     .eq('id', id)
     .eq('user_id', user.id)
 

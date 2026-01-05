@@ -45,6 +45,13 @@ export interface Database {
           purchase_price: number | null
           purchase_date: string | null
           notes: string | null
+          maintenance_contact_name: string | null
+          maintenance_contact_phone: string | null
+          maintenance_contact_email: string | null
+          property_manager_name: string | null
+          property_manager_phone: string | null
+          property_manager_email: string | null
+          property_manager_company: string | null
           created_at: string
           updated_at: string
         }
@@ -60,6 +67,13 @@ export interface Database {
           purchase_price?: number | null
           purchase_date?: string | null
           notes?: string | null
+          maintenance_contact_name?: string | null
+          maintenance_contact_phone?: string | null
+          maintenance_contact_email?: string | null
+          property_manager_name?: string | null
+          property_manager_phone?: string | null
+          property_manager_email?: string | null
+          property_manager_company?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -75,6 +89,13 @@ export interface Database {
           purchase_price?: number | null
           purchase_date?: string | null
           notes?: string | null
+          maintenance_contact_name?: string | null
+          maintenance_contact_phone?: string | null
+          maintenance_contact_email?: string | null
+          property_manager_name?: string | null
+          property_manager_phone?: string | null
+          property_manager_email?: string | null
+          property_manager_company?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -390,6 +411,7 @@ export interface Database {
           is_recurring: boolean
           recurring_day: number | null
           receipt_path: string | null
+          vastike_breakdown: Json | null
           created_at: string
           updated_at: string
         }
@@ -404,6 +426,7 @@ export interface Database {
           is_recurring?: boolean
           recurring_day?: number | null
           receipt_path?: string | null
+          vastike_breakdown?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -418,6 +441,7 @@ export interface Database {
           is_recurring?: boolean
           recurring_day?: number | null
           receipt_path?: string | null
+          vastike_breakdown?: Json | null
           created_at?: string
           updated_at?: string
         }

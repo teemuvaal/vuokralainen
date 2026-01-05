@@ -6,6 +6,7 @@ import type { Database } from '@/lib/database.types'
 import type { VastikeBreakdown } from '@/lib/types'
 
 type ExpenseInsert = Database['public']['Tables']['expenses']['Insert']
+type ExpenseUpdate = Database['public']['Tables']['expenses']['Update']
 type ExpenseCategoryInsert = Database['public']['Tables']['expense_categories']['Insert']
 
 export async function createExpense(formData: FormData) {
@@ -103,7 +104,7 @@ export async function updateExpense(id: string, formData: FormData) {
     }
   }
 
-  const data = {
+  const data: ExpenseUpdate = {
     property_id: formData.get('propertyId') as string || null,
     category_id: formData.get('categoryId') as string || null,
     amount: Number(formData.get('amount')),
@@ -111,12 +112,12 @@ export async function updateExpense(id: string, formData: FormData) {
     expense_date: formData.get('expenseDate') as string,
     is_recurring: formData.get('isRecurring') === 'true',
     recurring_day: formData.get('recurringDay') ? Number(formData.get('recurringDay')) : null,
-    vastike_breakdown: vastikeBreakdown as never,
+    vastike_breakdown: vastikeBreakdown as any,
   }
 
   const { error } = await supabase
     .from('expenses')
-    .update(data)
+    .update(data as never)
     .eq('id', id)
     .eq('user_id', user.id)
 
@@ -167,7 +168,7 @@ export async function createExpenseCategory(formData: FormData) {
     is_system: false,
   }
 
-  const { error } = await supabase.from('expense_categories').insert(data)
+  const { error } = await supabase.from('expense_categories').insert(data as never)
 
   if (error) {
     return { error: error.message }

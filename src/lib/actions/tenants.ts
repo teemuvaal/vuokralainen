@@ -27,7 +27,7 @@ export async function createTenant(formData: FormData) {
     is_active: true,
   }
 
-  const { error } = await supabase.from('tenants').insert(data)
+  const { error } = await supabase.from('tenants').insert(data as never)
 
   if (error) {
     return { error: error.message }
@@ -62,7 +62,7 @@ export async function updateTenant(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from('tenants')
-    .update(data)
+    .update(data as never)
     .eq('id', id)
     .eq('user_id', user.id)
 
@@ -109,7 +109,7 @@ export async function toggleTenantActive(id: string, isActive: boolean) {
 
   const { error } = await supabase
     .from('tenants')
-    .update({ is_active: isActive })
+    .update({ is_active: isActive } as never)
     .eq('id', id)
     .eq('user_id', user.id)
 

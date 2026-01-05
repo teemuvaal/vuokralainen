@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/lib/database.types'
+
+type PropertyDocumentInsert = Database['public']['Tables']['property_documents']['Insert']
 
 export async function POST(
   request: NextRequest,
@@ -64,17 +67,19 @@ export async function POST(
     }
 
     // Create database record
+    const documentData: PropertyDocumentInsert = {
+      property_id: propertyId,
+      user_id: user.id,
+      name: file.name,
+      file_path: uploadData.path,
+      file_size: file.size,
+      mime_type: file.type,
+      document_type: documentType || null,
+    }
+
     const { data: document, error: dbError } = await supabase
       .from('property_documents')
-      .insert({
-        property_id: propertyId,
-        user_id: user.id,
-        name: file.name,
-        file_path: uploadData.path,
-        file_size: file.size,
-        mime_type: file.type,
-        document_type: documentType || null,
-      })
+      .insert(documentData as any)
       .select()
       .single()
 

@@ -2,6 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Database } from '@/lib/database.types'
+
+type PropertyDocument = Database['public']['Tables']['property_documents']['Row']
 
 export async function getPropertyDocuments(propertyId: string) {
   const supabase = await createClient()
@@ -52,10 +55,12 @@ export async function deletePropertyDocument(documentId: string, propertyId: str
     throw new Error('Document not found or access denied')
   }
 
+  const doc = document as PropertyDocument
+
   // Delete from storage
   const { error: storageError } = await supabase.storage
     .from('documents')
-    .remove([document.file_path])
+    .remove([doc.file_path])
 
   if (storageError) {
     console.error('Storage deletion error:', storageError)
@@ -99,10 +104,12 @@ export async function getDocumentDownloadUrl(documentId: string, propertyId: str
     throw new Error('Document not found or access denied')
   }
 
+  const doc = document as PropertyDocument
+
   // Get signed URL for download
   const { data: signedUrlData, error: urlError } = await supabase.storage
     .from('documents')
-    .createSignedUrl(document.file_path, 60) // 60 seconds expiry
+    .createSignedUrl(doc.file_path, 60) // 60 seconds expiry
 
   if (urlError || !signedUrlData) {
     throw new Error('Failed to generate download URL')
