@@ -10,14 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
-import { createExpense } from '@/lib/actions/expenses'
+import { createExpense, updateExpense } from '@/lib/actions/expenses'
 import { VastikeBreakdownInput } from './vastike-breakdown-input'
+import { parseVastikeBreakdown } from '@/lib/types'
 import type { Database } from '@/lib/database.types'
 
 type Property = Database['public']['Tables']['properties']['Row']
 type ExpenseCategory = Database['public']['Tables']['expense_categories']['Row']
+type Expense = Database['public']['Tables']['expenses']['Row']
 
-function SubmitButton() {
+function SubmitButton({ mode }: { mode: 'create' | 'edit' }) {
   const { pending } = useFormStatus()
 
   return (
@@ -28,7 +30,7 @@ function SubmitButton() {
           Tallennetaan...
         </>
       ) : (
-        'Kirjaa kulu'
+        mode === 'edit' ? 'Tallenna muutokset' : 'Kirjaa kulu'
       )}
     </Button>
   )
@@ -37,6 +39,7 @@ function SubmitButton() {
 interface ExpenseFormProps {
   properties: Property[]
   categories: ExpenseCategory[]
+  expense?: Expense
   defaultAmount?: number
   defaultDate?: string
   onSuccess?: () => void
@@ -45,14 +48,22 @@ interface ExpenseFormProps {
 export function ExpenseForm({
   properties,
   categories,
+  expense,
   defaultAmount,
   defaultDate,
   onSuccess,
 }: ExpenseFormProps) {
+  const mode: 'create' | 'edit' = expense ? 'edit' : 'create'
+  const breakdown = expense ? parseVastikeBreakdown(expense.vastike_breakdown) : null
+
   const [error, setError] = useState<string | null>(null)
-  const [isRecurring, setIsRecurring] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>()
-  const [amount, setAmount] = useState<number>(defaultAmount || 0)
+  const [isRecurring, setIsRecurring] = useState(expense?.is_recurring || false)
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    expense?.category_id || undefined
+  )
+  const [amount, setAmount] = useState<number>(
+    expense?.amount ? Number(expense.amount) : (defaultAmount || 0)
+  )
   const [showVastikeBreakdown, setShowVastikeBreakdown] = useState(false)
 
   // Find "Vastike" category
@@ -67,7 +78,11 @@ export function ExpenseForm({
   async function handleSubmit(formData: FormData) {
     setError(null)
     formData.set('isRecurring', String(isRecurring))
-    const result = await createExpense(formData)
+
+    const result = mode === 'edit' && expense
+      ? await updateExpense(expense.id, formData)
+      : await createExpense(formData)
+
     if (result?.error) {
       setError(result.error)
     } else if (result?.success) {
@@ -104,7 +119,11 @@ export function ExpenseForm({
             id="expenseDate"
             name="expenseDate"
             type="date"
-            defaultValue={defaultDate || new Date().toISOString().split('T')[0]}
+            defaultValue={
+              expense?.expense_date ||
+              defaultDate ||
+              new Date().toISOString().split('T')[0]
+            }
             required
           />
         </div>
@@ -113,7 +132,7 @@ export function ExpenseForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="propertyId">Kohde</Label>
-          <Select name="propertyId">
+          <Select name="propertyId" defaultValue={expense?.property_id || undefined}>
             <SelectTrigger>
               <SelectValue placeholder="Valitse kohde" />
             </SelectTrigger>
@@ -148,7 +167,10 @@ export function ExpenseForm({
       {isVastikeSelected && (
         <div className="space-y-2">
           <input type="hidden" name="hasVastikeBreakdown" value="true" />
-          <VastikeBreakdownInput totalAmount={amount} />
+          <VastikeBreakdownInput
+            totalAmount={amount}
+            defaultValues={breakdown || undefined}
+          />
         </div>
       )}
 
@@ -160,6 +182,7 @@ export function ExpenseForm({
           name="description"
           placeholder="Kulun kuvaus..."
           rows={2}
+          defaultValue={expense?.description || ''}
         />
       </div>
 
@@ -184,11 +207,12 @@ export function ExpenseForm({
             min="1"
             max="31"
             placeholder="1"
+            defaultValue={expense?.recurring_day || undefined}
           />
         </div>
       )}
 
-      <SubmitButton />
+      <SubmitButton mode={mode} />
     </form>
   )
 }
