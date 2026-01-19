@@ -8,12 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PropertyForm } from '@/components/properties/property-form'
 import { PropertyDocuments } from '@/components/documents/property-documents'
 import { VastikeBreakdownDisplay } from '@/components/expenses/vastike-breakdown-display'
+import { LainaBreakdownDisplay } from '@/components/expenses/laina-breakdown-display'
 import { PendingIncreasesWidget } from '@/components/rent/pending-increases-widget'
 import { RentIncreaseHistory } from '@/components/rent/rent-increase-history'
 import { updateProperty, deleteProperty } from '@/lib/actions/properties'
 import { getPropertyDocuments } from '@/lib/actions/documents'
 import { getPendingRentIncreases } from '@/lib/actions/rent'
-import { parseVastikeBreakdown } from '@/lib/types'
+import { parseVastikeBreakdown, parseLainaBreakdown } from '@/lib/types'
 import type { Database } from '@/lib/database.types'
 import {
   ArrowLeft,
@@ -332,7 +333,8 @@ export default async function PropertyDetailPage({
                 {recentExpenses && recentExpenses.length > 0 ? (
                   <div className="space-y-2">
                     {recentExpenses.map((expense) => {
-                      const breakdown = parseVastikeBreakdown(expense.vastike_breakdown)
+                      const vastikeBreakdown = parseVastikeBreakdown(expense.vastike_breakdown)
+                      const lainaBreakdown = parseLainaBreakdown(expense.laina_breakdown)
 
                       return (
                         <div key={expense.id} className="rounded border">
@@ -345,9 +347,14 @@ export default async function PropertyDetailPage({
                               -{Number(expense.amount).toLocaleString('fi-FI')} €
                             </span>
                           </div>
-                          {breakdown && (
+                          {vastikeBreakdown && (
                             <div className="px-2 pb-2 pt-0">
-                              <VastikeBreakdownDisplay breakdown={breakdown} compact />
+                              <VastikeBreakdownDisplay breakdown={vastikeBreakdown} compact />
+                            </div>
+                          )}
+                          {lainaBreakdown && (
+                            <div className="px-2 pb-2 pt-0">
+                              <LainaBreakdownDisplay breakdown={lainaBreakdown} compact />
                             </div>
                           )}
                         </div>

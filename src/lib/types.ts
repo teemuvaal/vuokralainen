@@ -22,3 +22,22 @@ export function parseVastikeBreakdown(json: unknown): VastikeBreakdown | null {
   if (isVastikeBreakdown(json)) return json
   return null
 }
+
+export interface LainaBreakdown {
+  pääoma: number
+  korko: number
+}
+
+export function isLainaBreakdown(value: unknown): value is LainaBreakdown {
+  if (!value || typeof value !== 'object') return false
+  const obj = value as Record<string, unknown>
+  return (
+    typeof obj.pääoma === 'number' &&
+    typeof obj.korko === 'number'
+  )
+}
+
+export function parseLainaBreakdown(json: unknown): LainaBreakdown | null {
+  if (isLainaBreakdown(json)) return json
+  return null
+}

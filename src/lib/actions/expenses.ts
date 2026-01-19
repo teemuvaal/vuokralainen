@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/database.types'
-import type { VastikeBreakdown } from '@/lib/types'
+import type { VastikeBreakdown, LainaBreakdown } from '@/lib/types'
 
 type ExpenseInsert = Database['public']['Tables']['expenses']['Insert']
 type ExpenseUpdate = Database['public']['Tables']['expenses']['Update']
@@ -19,9 +19,9 @@ export async function createExpense(formData: FormData) {
 
   // Handle vastike breakdown if present
   let vastikeBreakdown: VastikeBreakdown | null = null
-  const hasBreakdown = formData.get('hasVastikeBreakdown') === 'true'
+  const hasVastikeBreakdown = formData.get('hasVastikeBreakdown') === 'true'
 
-  if (hasBreakdown) {
+  if (hasVastikeBreakdown) {
     const yhtiövastike = Number(formData.get('yhtiövastike')) || 0
     const rahoitusvastike = Number(formData.get('rahoitusvastike')) || 0
     const saunamaksu = Number(formData.get('saunamaksu')) || 0
@@ -45,6 +45,30 @@ export async function createExpense(formData: FormData) {
     }
   }
 
+  // Handle laina breakdown if present
+  let lainaBreakdown: LainaBreakdown | null = null
+  const hasLainaBreakdown = formData.get('hasLainaBreakdown') === 'true'
+
+  if (hasLainaBreakdown) {
+    const pääoma = Number(formData.get('pääoma')) || 0
+    const korko = Number(formData.get('korko')) || 0
+
+    // Validate sum matches total amount
+    const breakdownSum = pääoma + korko
+    const amount = Number(formData.get('amount'))
+
+    if (Math.abs(breakdownSum - amount) > 0.01) {
+      return {
+        error: `Lainan osat (${breakdownSum.toFixed(2)} €) eivät täsmää kokonaissumman (${amount.toFixed(2)} €) kanssa`
+      }
+    }
+
+    lainaBreakdown = {
+      pääoma,
+      korko,
+    }
+  }
+
   const data: ExpenseInsert = {
     user_id: user.id,
     property_id: formData.get('propertyId') as string || null,
@@ -55,6 +79,7 @@ export async function createExpense(formData: FormData) {
     is_recurring: formData.get('isRecurring') === 'true',
     recurring_day: formData.get('recurringDay') ? Number(formData.get('recurringDay')) : null,
     vastike_breakdown: vastikeBreakdown as never,
+    laina_breakdown: lainaBreakdown as never,
   }
 
   const { error } = await supabase.from('expenses').insert(data as never)
@@ -78,9 +103,9 @@ export async function updateExpense(id: string, formData: FormData) {
 
   // Handle vastike breakdown if present
   let vastikeBreakdown: VastikeBreakdown | null = null
-  const hasBreakdown = formData.get('hasVastikeBreakdown') === 'true'
+  const hasVastikeBreakdown = formData.get('hasVastikeBreakdown') === 'true'
 
-  if (hasBreakdown) {
+  if (hasVastikeBreakdown) {
     const yhtiövastike = Number(formData.get('yhtiövastike')) || 0
     const rahoitusvastike = Number(formData.get('rahoitusvastike')) || 0
     const saunamaksu = Number(formData.get('saunamaksu')) || 0
@@ -104,6 +129,30 @@ export async function updateExpense(id: string, formData: FormData) {
     }
   }
 
+  // Handle laina breakdown if present
+  let lainaBreakdown: LainaBreakdown | null = null
+  const hasLainaBreakdown = formData.get('hasLainaBreakdown') === 'true'
+
+  if (hasLainaBreakdown) {
+    const pääoma = Number(formData.get('pääoma')) || 0
+    const korko = Number(formData.get('korko')) || 0
+
+    // Validate sum matches total amount
+    const breakdownSum = pääoma + korko
+    const amount = Number(formData.get('amount'))
+
+    if (Math.abs(breakdownSum - amount) > 0.01) {
+      return {
+        error: `Lainan osat (${breakdownSum.toFixed(2)} €) eivät täsmää kokonaissumman (${amount.toFixed(2)} €) kanssa`
+      }
+    }
+
+    lainaBreakdown = {
+      pääoma,
+      korko,
+    }
+  }
+
   const data: ExpenseUpdate = {
     property_id: formData.get('propertyId') as string || null,
     category_id: formData.get('categoryId') as string || null,
@@ -113,6 +162,7 @@ export async function updateExpense(id: string, formData: FormData) {
     is_recurring: formData.get('isRecurring') === 'true',
     recurring_day: formData.get('recurringDay') ? Number(formData.get('recurringDay')) : null,
     vastike_breakdown: vastikeBreakdown as any,
+    laina_breakdown: lainaBreakdown as any,
   }
 
   const { error } = await supabase

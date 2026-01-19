@@ -12,7 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { createExpense, updateExpense } from '@/lib/actions/expenses'
 import { VastikeBreakdownInput } from './vastike-breakdown-input'
-import { parseVastikeBreakdown } from '@/lib/types'
+import { LainaBreakdownInput } from './laina-breakdown-input'
+import { parseVastikeBreakdown, parseLainaBreakdown } from '@/lib/types'
 import type { Database } from '@/lib/database.types'
 
 type Property = Database['public']['Tables']['properties']['Row']
@@ -54,7 +55,8 @@ export function ExpenseForm({
   onSuccess,
 }: ExpenseFormProps) {
   const mode: 'create' | 'edit' = expense ? 'edit' : 'create'
-  const breakdown = expense ? parseVastikeBreakdown(expense.vastike_breakdown) : null
+  const vastikeBreakdown = expense ? parseVastikeBreakdown(expense.vastike_breakdown) : null
+  const lainaBreakdown = expense ? parseLainaBreakdown(expense.laina_breakdown) : null
 
   const [error, setError] = useState<string | null>(null)
   const [isRecurring, setIsRecurring] = useState(expense?.is_recurring || false)
@@ -65,15 +67,19 @@ export function ExpenseForm({
     expense?.amount ? Number(expense.amount) : (defaultAmount || 0)
   )
   const [showVastikeBreakdown, setShowVastikeBreakdown] = useState(false)
+  const [showLainaBreakdown, setShowLainaBreakdown] = useState(false)
 
-  // Find "Vastike" category
+  // Find "Vastike" and "Laina" categories
   const vastikeCategory = categories.find(c => c.name === 'Vastike')
+  const lainaCategory = categories.find(c => c.name === 'Laina')
   const isVastikeSelected = selectedCategory === vastikeCategory?.id
+  const isLainaSelected = selectedCategory === lainaCategory?.id
 
   // Update breakdown visibility when category changes
   useEffect(() => {
     setShowVastikeBreakdown(isVastikeSelected)
-  }, [isVastikeSelected])
+    setShowLainaBreakdown(isLainaSelected)
+  }, [isVastikeSelected, isLainaSelected])
 
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -169,7 +175,18 @@ export function ExpenseForm({
           <input type="hidden" name="hasVastikeBreakdown" value="true" />
           <VastikeBreakdownInput
             totalAmount={amount}
-            defaultValues={breakdown || undefined}
+            defaultValues={vastikeBreakdown || undefined}
+          />
+        </div>
+      )}
+
+      {/* Laina Breakdown - shown only when Laina category is selected */}
+      {isLainaSelected && (
+        <div className="space-y-2">
+          <input type="hidden" name="hasLainaBreakdown" value="true" />
+          <LainaBreakdownInput
+            totalAmount={amount}
+            defaultValues={lainaBreakdown || undefined}
           />
         </div>
       )}

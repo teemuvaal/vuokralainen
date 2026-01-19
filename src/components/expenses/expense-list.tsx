@@ -14,8 +14,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ChevronDown, ChevronRight, Receipt, Pencil, Trash2, Loader2 } from 'lucide-react'
-import { parseVastikeBreakdown } from '@/lib/types'
+import { parseVastikeBreakdown, parseLainaBreakdown } from '@/lib/types'
 import { VastikeBreakdownDisplay } from './vastike-breakdown-display'
+import { LainaBreakdownDisplay } from './laina-breakdown-display'
 import { ExpenseForm } from './expense-form'
 import { deleteExpense } from '@/lib/actions/expenses'
 import type { Database } from '@/lib/database.types'
@@ -73,8 +74,9 @@ export function ExpenseList({ expenses, propertyMap, categoryMap }: ExpenseListP
       </TableHeader>
       <TableBody>
         {expenses.map((expense) => {
-          const breakdown = parseVastikeBreakdown(expense.vastike_breakdown)
-          const hasBreakdown = breakdown !== null
+          const vastikeBreakdown = parseVastikeBreakdown(expense.vastike_breakdown)
+          const lainaBreakdown = parseLainaBreakdown(expense.laina_breakdown)
+          const hasBreakdown = vastikeBreakdown !== null || lainaBreakdown !== null
           const isExpanded = expandedRows.has(expense.id)
 
           return (
@@ -223,9 +225,19 @@ export function ExpenseList({ expenses, propertyMap, categoryMap }: ExpenseListP
               {hasBreakdown && isExpanded && (
                 <TableRow key={`${expense.id}-breakdown`}>
                   <TableCell colSpan={6} className="bg-muted/30">
-                    <div className="py-2 px-8">
-                      <div className="text-sm font-medium mb-2">Vastikkeen erittely:</div>
-                      <VastikeBreakdownDisplay breakdown={breakdown} />
+                    <div className="py-2 px-8 space-y-4">
+                      {vastikeBreakdown && (
+                        <div>
+                          <div className="text-sm font-medium mb-2">Vastikkeen erittely:</div>
+                          <VastikeBreakdownDisplay breakdown={vastikeBreakdown} />
+                        </div>
+                      )}
+                      {lainaBreakdown && (
+                        <div>
+                          <div className="text-sm font-medium mb-2">Lainanmaksun erittely:</div>
+                          <LainaBreakdownDisplay breakdown={lainaBreakdown} />
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
