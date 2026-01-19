@@ -412,6 +412,7 @@ export interface Database {
           recurring_day: number | null
           receipt_path: string | null
           vastike_breakdown: Json | null
+          laina_breakdown: Json | null
           created_at: string
           updated_at: string
         }
@@ -427,6 +428,7 @@ export interface Database {
           recurring_day?: number | null
           receipt_path?: string | null
           vastike_breakdown?: Json | null
+          laina_breakdown?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -442,6 +444,7 @@ export interface Database {
           recurring_day?: number | null
           receipt_path?: string | null
           vastike_breakdown?: Json | null
+          laina_breakdown?: Json | null
           created_at?: string
           updated_at?: string
         }
